@@ -3,7 +3,7 @@ language: python
 variables:
   - name: input
     inputType: InputTopic
-    defaultValue: f1-data
+    defaultValue: metrics-models
     required: false
 dockerfile: dockerfile
 runEntryPoint: main.py
