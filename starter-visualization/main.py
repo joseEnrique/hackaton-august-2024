@@ -7,9 +7,9 @@ import os
 import threading
 from flask import Flask, render_template
 from flask_socketio import SocketIO
-from fastapi import FastAPI, WebSocket
-from random import choice, randint
-import asyncio
+# from fastapi import FastAPI, WebSocket
+# from random import choice, randint
+# import asyncio
 
 
 # import the dotenv module to load environment variables from a file
