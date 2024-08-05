@@ -46,7 +46,7 @@ def main():
                     # key=message_key,
                     value=json_data
                 )
-                sleep(0.5)
+                sleep(0.1)
         
 
 if __name__ == "__main__":
