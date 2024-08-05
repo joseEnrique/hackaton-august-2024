@@ -50,7 +50,8 @@ deployments:
     network:
       serviceName: visualitation-weey
       ports:
-        - port: 9000
+        - port: 80
+          targetPort: 9000
     variables:
       - name: input
         inputType: InputTopic
