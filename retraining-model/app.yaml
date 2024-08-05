@@ -1,0 +1,14 @@
+name: starter-visualization
+language: python
+variables:
+  - name: input
+    inputType: InputTopic
+    defaultValue: phishing-data
+    required: false
+  - name: output
+    inputType: OutputTopic
+    defaultValue: metrics-models
+    required: false
+dockerfile: dockerfile
+runEntryPoint: main.py
+defaultFile: main.py

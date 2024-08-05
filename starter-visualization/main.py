@@ -7,6 +7,10 @@ import os
 import threading
 from flask import Flask, render_template
 from flask_socketio import SocketIO
+from fastapi import FastAPI, WebSocket
+from random import choice, randint
+import asyncio
+
 
 # import the dotenv module to load environment variables from a file
 from dotenv import load_dotenv
@@ -32,7 +36,7 @@ def handle_disconnect():
     print('Client disconnected')
 
 def run_socketio_app():
-    socketio.run(app, host='0.0.0.0', port=5000) ## changing this port to 80 can cause issues running the app locally
+    socketio.run(app, host='0.0.0.0', port=9000,allow_unsafe_werkzeug=True) ## changing this port to 80 can cause issues running the app locally
 
 def send_telemetry(data: dict):
     socketio.emit('telemetry', data)
@@ -51,6 +55,11 @@ if __name__ == '__main__':
 
     sdf = quix_app.dataframe(input_topic)
     sdf = sdf.update(send_telemetry)
-    sdf = sdf.print()
+    # sdf = sdf.print()
 
     quix_app.run(sdf)
+
+
+
+
+

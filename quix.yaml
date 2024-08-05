@@ -6,8 +6,8 @@ metadata:
 
 # This section describes the Deployments of the data pipeline
 deployments:
-  - name: demo-data-source
-    application: demo-data-source
+  - name: phishing-data-source
+    application: phishing-data-source
     version: latest
     deploymentType: Service
     resources:
@@ -18,7 +18,28 @@ deployments:
       - name: output
         inputType: OutputTopic
         required: false
-        value: f1-data
+        value: phishing-data
+  - name: retraining-model
+    application: retraining-model
+    version: latest
+    deploymentType: Service
+    network:
+      serviceName: Visualization
+      ports:
+      - port: 5000
+    resources:
+      cpu: 200
+      memory: 800
+      replicas: 1
+    variables:
+      - name: output
+        inputType: OutputTopic
+        required: false
+        value: metrics-models
+      - name: input
+        inputType: InputTopic
+        required: false
+        value: phishing-data
   - name: starter-visualization
     application: starter-visualization
     version: latest
@@ -35,8 +56,9 @@ deployments:
       - name: input
         inputType: InputTopic
         required: false
-        value: f1-data
+        value: metrics-models
 
 # This section describes the Topics of the data pipeline
 topics:
-  - name: f1-data
+  - name: phishing-data
+  - name: metrics-models
