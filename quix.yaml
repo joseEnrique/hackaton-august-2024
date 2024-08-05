@@ -41,7 +41,7 @@ deployments:
     version: latest
     deploymentType: Service
     network:
-      serviceName: Visualization
+      serviceName: visualitation-weey
       ports:
       - port: 9000
     resources:
