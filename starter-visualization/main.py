@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     sdf = quix_app.dataframe(input_topic)
     sdf = sdf.update(send_telemetry)
-    # sdf = sdf.print()
+    sdf = sdf.print()
 
     quix_app.run(sdf)
 

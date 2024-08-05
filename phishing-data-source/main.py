@@ -34,7 +34,7 @@ def main():
 
     producer = app.get_producer()
     with producer:
-        dataset = datasets.Phishing()   
+        dataset = datasets.CreditCard()   
         while True:
             for x, y in dataset:
                 print(f"Sending: {x, y}")

@@ -11,24 +11,49 @@
             background-color: #000;
             color: #fff;
             font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
 
         #legend {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+            width: 80%;
+            margin: 20px 0;
             font-size: 24px;
             background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
             padding: 10px;
             border-radius: 5px;
+            text-align: center;
         }
 
         #legend table {
             font-size: 18px;
+            width: 100%;
+            margin: 0 auto;
         }
 
         #legend table tr td {
             padding-right: 15px;
+            text-align: left;
+        }
+
+        #chartContainer {
+            width: 80%;
+            height: 60vh; /* Increased chart height */
+        }
+
+        #telemetryChart {
+            width: 100%;
+            height: 100%;
+        }
+
+        #unicornGif {
+            position: absolute;
+            bottom: 10px;
+            width: 100px;
+            height: auto;
         }
     </style>
 </head>
@@ -38,18 +63,73 @@
             <!-- Dynamic rows will be added here -->
         </table>
     </div>
+    <div id="chartContainer">
+        <canvas id="telemetryChart"></canvas>
+    </div>
+    <img id="unicornGif" src="https://media1.tenor.com/m/oZaBy0apQPoAAAAd/rainbow-unicorn.gif"    width="100"  height="100" alt="Unicorn GIF">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const telemetryTable = document.getElementById('telemetryTable');
+        const ctx = document.getElementById('telemetryChart').getContext('2d');
 
-        // Dynamically generate WebSocket connection URL based on the current location
         const currentLocation = window.location;
         const socket = io.connect(`${currentLocation.protocol}//${currentLocation.host}`);
 
-        // Function to update the telemetry data in the legend
+        const telemetryData = {
+            datasets: [
+                {
+                    label: 'deep',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    data: [],
+                },
+                {
+                    label: 'linear',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    data: [],
+                },
+            ],
+        };
+
+        const telemetryChart = new Chart(ctx, {
+            type: 'line',
+            data: telemetryData,
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: {
+                            display: true,
+                            text: 'X',
+                        },
+                        ticks: {
+                            autoSkip: false,
+                            maxTicksLimit: 50,
+                            stepSize: 1
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Accuracy (%)',
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toFixed(2) + '%';
+                            }
+                        }
+                    },
+                },
+            },
+        });
+
         function updateTelemetry(telemetry) {
-            telemetryTable.innerHTML = ''; // Clear existing data
+            telemetryTable.innerHTML = '';
 
             for (const [key, value] of Object.entries(telemetry)) {
                 const row = document.createElement('tr');
@@ -59,17 +139,32 @@
                 row.appendChild(keyCell);
 
                 const valueCell = document.createElement('td');
-                valueCell.textContent = value;
+                valueCell.textContent = parseFloat(value).toFixed(2);
                 row.appendChild(valueCell);
 
                 telemetryTable.appendChild(row);
             }
+
+            const xValue = telemetry.x;
+
+            if (telemetry.deep !== undefined) {
+                telemetryData.datasets[0].data.push({ x: xValue, y: telemetry.deep * 100 });
+            }
+
+            if (telemetry.linear !== undefined) {
+                telemetryData.datasets[1].data.push({ x: xValue, y: telemetry.linear * 100 });
+            }
+
+            telemetryChart.update();
         }
 
-        // Listen for telemetry updates from the server
         socket.on('telemetry', (telemetry) => {
             updateTelemetry(telemetry);
         });
     </script>
 </body>
 </html>
+
+
+
+
