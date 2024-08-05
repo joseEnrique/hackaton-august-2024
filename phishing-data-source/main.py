@@ -46,7 +46,7 @@ def main():
                     # key=message_key,
                     value=json_data
                 )
-                sleep(random.random())
+                sleep(0.5)
         
 
 if __name__ == "__main__":
