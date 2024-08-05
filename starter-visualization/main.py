@@ -36,7 +36,7 @@ def handle_disconnect():
     print('Client disconnected')
 
 def run_socketio_app():
-    socketio.run(app, host='0.0.0.0', port=9000,allow_unsafe_werkzeug=True) ## changing this port to 80 can cause issues running the app locally
+    socketio.run(app, host='0.0.0.0', port=9000) ## changing this port to 80 can cause issues running the app locally
 
 def send_telemetry(data: dict):
     socketio.emit('telemetry', data)
