@@ -6,3 +6,4 @@ eventlet==0.31.0
 Werkzeug==2.0.2
 river
 pytest
+deep_river
