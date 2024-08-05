@@ -40,14 +40,17 @@ deployments:
     application: starter-visualization
     version: latest
     deploymentType: Service
-    network:
-      serviceName: visualitation-weey
-      ports:
-      - port: 9000
     resources:
       cpu: 200
       memory: 800
       replicas: 1
+    publicAccess:
+      enabled: true
+      urlPrefix: prettyfy
+    network:
+      serviceName: visualitation-weey
+      ports:
+        - port: 9000
     variables:
       - name: input
         inputType: InputTopic
