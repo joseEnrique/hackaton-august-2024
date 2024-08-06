@@ -1,4 +1,4 @@
-name: retraining-model
+name: starter-visualization
 language: python
 variables:
   - name: input
