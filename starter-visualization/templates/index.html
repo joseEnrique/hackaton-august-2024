@@ -39,12 +39,13 @@
             text-align: left;
         }
 
-        #chartContainer {
+        .chart-container {
             width: 80%;
-            height: 60vh; /* Increased chart height */
+            height: 40vh; /* Increased chart height */
+            margin-bottom: 20px;
         }
 
-        #telemetryChart {
+        #telemetryChart, #driftChart {
             width: 100%;
             height: 100%;
         }
@@ -63,16 +64,20 @@
             <!-- Dynamic rows will be added here -->
         </table>
     </div>
-    <div id="chartContainer">
+    <div class="chart-container">
         <canvas id="telemetryChart"></canvas>
     </div>
-    <img id="unicornGif" src="https://media1.tenor.com/m/oZaBy0apQPoAAAAd/rainbow-unicorn.gif"    width="100"  height="100" alt="Unicorn GIF">
+    <div class="chart-container">
+        <canvas id="driftChart"></canvas>
+    </div>
+    <img id="unicornGif" src="https://media1.tenor.com/m/oZaBy0apQPoAAAAd/rainbow-unicorn.gif" alt="Unicorn GIF">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const telemetryTable = document.getElementById('telemetryTable');
-        const ctx = document.getElementById('telemetryChart').getContext('2d');
+        const ctxTelemetry = document.getElementById('telemetryChart').getContext('2d');
+        const ctxDrift = document.getElementById('driftChart').getContext('2d');
 
         const currentLocation = window.location;
         const socket = io.connect(`${currentLocation.protocol}//${currentLocation.host}`);
@@ -94,7 +99,18 @@
             ],
         };
 
-        const telemetryChart = new Chart(ctx, {
+        const driftData = {
+            datasets: [
+                {
+                    label: 'drift',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    data: [],
+                },
+            ],
+        };
+
+        const telemetryChart = new Chart(ctxTelemetry, {
             type: 'line',
             data: telemetryData,
             options: {
@@ -121,6 +137,40 @@
                         ticks: {
                             callback: function(value) {
                                 return value.toFixed(2) + '%';
+                            }
+                        }
+                    },
+                },
+            },
+        });
+
+        const driftChart = new Chart(ctxDrift, {
+            type: 'line',
+            data: driftData,
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: {
+                            display: true,
+                            text: 'X',
+                        },
+                        ticks: {
+                            autoSkip: false,
+                            maxTicksLimit: 50,
+                            stepSize: 1
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Drift',
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toFixed(2);
                             }
                         }
                     },
@@ -155,7 +205,12 @@
                 telemetryData.datasets[1].data.push({ x: xValue, y: telemetry.linear * 100 });
             }
 
+            if (telemetry.drift !== undefined) {
+                driftData.datasets[0].data.push({ x: xValue, y: telemetry.drift });
+            }
+
             telemetryChart.update();
+            driftChart.update();
         }
 
         socket.on('telemetry', (telemetry) => {
@@ -164,7 +219,3 @@
     </script>
 </body>
 </html>
-
-
-
-

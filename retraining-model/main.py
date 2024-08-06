@@ -8,6 +8,7 @@ from river import linear_model
 from river import compose
 from river import preprocessing
 from river import metrics
+from river import drift
 from deep_river import classification
 from torch import nn
 from torch import optim
@@ -37,6 +38,7 @@ class MyModule(nn.Module):
 # use rocauc as the metric for evaluation
 metric = metrics.Accuracy()
 deep_metric = metrics.Accuracy()
+adwin = drift.ADWIN()
 
 # create a simple LR model with a scaler
 model = compose.Pipeline(
@@ -60,16 +62,25 @@ def deep_predict(x,y):
     deep_metric.update(y, y_pred)
     return deep_metric.get()
 
-def send_outtopic(quix_app,producer,value):
-    outtopic_name = os.getenv("output", "")
-    if outtopic_name == "":
-        raise ValueError("The 'output' environment variable is required. This is the output topic that data will be published to.")
-    topic = quix_app.topic(outtopic_name)
+def detect_concept_drift(x):
+    # Use exec to evaluate the string and assign it to the dictionary
+    concept= sum(x.values())
+    adwin.update(concept)
+    if adwin.drift_detected:
+        return 1
+    else:
+        return 0
+# def send_outtopic(quix_app,producer,value):
+#     outtopic_name = os.getenv("output", "")
+#     if outtopic_name == "":
+#         raise ValueError("The 'output' environment variable is required. This is the output topic that data will be published to.")
+#     topic = quix_app.topic(outtopic_name)
 
-    data = {'deep':value['deep'],'linear':value['linear'], 'x': value['x']}
+#     data = {'deep':value['deep'],'linear':value['linear'], 'x': value['x'], 'drift': value['drift']}
+#     # data = {'deep':value['deep'],'linear':value['linear'], 'x': value['x']}
    
-    json_data = json.dumps(data)
-    producer.produce(topic=topic.name,value=json_data)
+#     json_data = json.dumps(data)
+#     producer.produce(topic=topic.name,value=json_data)
 
 def add_one_to_counter(value: dict, state: State):
     total = state.get('x') 
@@ -86,16 +97,25 @@ if __name__ == '__main__':
 
     # Create an Application and run it in the main thread.
     quix_app = Application()
+    # quix_app.clear_state()
     producer = quix_app.get_producer()
     input_topic = quix_app.topic(os.environ["input"])
 
-    sdf = quix_app.dataframe(input_topic)
+    outtopic_name = os.getenv("output", "")
+    if outtopic_name == "":
+        raise ValueError("The 'output' environment variable is required. This is the output topic that data will be published to.")
+    topic = quix_app.topic(outtopic_name)
 
+
+    sdf = quix_app.dataframe(input_topic)
     sdf["linear"] = sdf.apply(lambda message: predict(message['x'],message['y']))
     sdf["deep"] = sdf.apply(lambda message: deep_predict(message['x'],message['y']))
+    sdf["drift"] = sdf.apply(lambda message: detect_concept_drift(message['x']))
     sdf = sdf.update(add_one_to_counter, stateful=True)
     # sdf = sdf.update(lambda message: print(f"Linear: {message['linear']}"))
     # sdf = sdf.update(lambda message: print(f"Deep: {message['deep']}"))
-    sdf = sdf.update(lambda message: send_outtopic(quix_app,producer,message) )
+    sdf = sdf[['deep','linear','x','drift']]
+    sdf.to_topic(topic)
+    # sdf = sdf.update(lambda message: send_outtopic(quix_app,producer,message) )
     sdf = sdf.print()
     quix_app.run(sdf)
