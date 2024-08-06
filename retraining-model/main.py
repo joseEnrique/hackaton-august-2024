@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     # Create an Application and run it in the main thread.
     quix_app = Application()
-    # quix_app.clear_state()
+    quix_app.clear_state()
     producer = quix_app.get_producer()
     input_topic = quix_app.topic(os.environ["input"])
 
