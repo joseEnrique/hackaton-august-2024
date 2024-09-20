@@ -27,15 +27,18 @@ deployments:
       cpu: 200
       memory: 800
       replicas: 1
+    state:
+      enabled: true
+      size: 2
     variables:
-      - name: output
-        inputType: OutputTopic
-        required: false
-        value: metrics-models
       - name: input
         inputType: InputTopic
         required: false
         value: phishing-data
+      - name: output
+        inputType: OutputTopic
+        required: false
+        value: metrics-models
   - name: starter-visualization
     application: starter-visualization
     version: latest
